@@ -22,10 +22,20 @@ function verifyToken(req, res, next) {
 app.post("/login", (req, res, next) => {
   if (req.body.user === "Guilherme" && req.body.password === "123") {
     //Verifica se o usuario e o password foi enviado no body da requisição
-    const user = req.body.user;
-    const token = jwt.sign({ user }, process.env.SECRET, {
-      expiresIn: 300, // expira em 5 minutos
+    const header = {
+      alg: "HS256",
+      typ: "JWT",
+    };
+
+    const payload = {
+      user: req.body.user,
+    };
+
+    const token = jwt.sign(payload, process.env.SECRET, {
+      header,
+      expiresIn: "1h",
     });
+
     console.log(token);
     return res.json({ token: token }); //Retorna o Token
   }
@@ -34,7 +44,7 @@ app.post("/login", (req, res, next) => {
 
 app.get("/foo-bar", verifyToken, (req, res) => {
   //
-  res.status(200).json({ message: "Usuario Autenticado" });
+  res.status(200).json({ message: `Usuario ${req.user} autenticado` });
 });
 
 app.listen(3000, () => {
